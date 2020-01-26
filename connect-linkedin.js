@@ -1,4 +1,13 @@
 (() => {
+    const searchTitles = ["sr.", "senior", "lead", "lead", "developer", "chief", "vice president",
+        "full stack", "director", "architect", "manager", "product owner", "aws certified"];
+    const searchKeywords = ["data engineer", "developer", "engineer", "fintech", "front end", "tech", "technical",
+        "software", "technology", "technical", "aws", "microservice",
+        "cloud", "big data", "backend", "frontend", "java", "javascript"];
+    const ofCourse = ["cto", "chief technology"];
+    const dontWant = ["quality", "business", "QA", "UX"]
+
+        
     let intervalLoop;
 
     function scrollToTop() {
@@ -42,14 +51,6 @@
     }
 
     function isMatch(infoText) {
-        const searchTitles = ["sr.", "senior", "lead", "lead", "developer", "chief", "vice president",
-            "full stack", "director", "architect", "manager", "product owner"];
-        const searchKeywords = ["data engineer", "engineer", "fintech", "front end", "tech", "technical",
-            "software", "technology", "technical", "aws", "microservice",
-            "cloud", "big data", "backend", "frontend", "java", "javascript"];
-        const ofCourse = ["cto", "chief technology"];
-        const dontWant = ["quality", "business", "QA", "UX"]
-
         const isFilteredTitles = searchTitles.some(f => infoText.toLowerCase().includes(f));
         const isFilteredKeywords = searchKeywords.some(f => infoText.toLowerCase().includes(f));
         const isMust = ofCourse.some(f => infoText.toLowerCase().includes(f));
