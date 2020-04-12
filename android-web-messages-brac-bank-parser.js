@@ -1,17 +1,22 @@
 (() => {
-    
+    let intervalCount = 0;
+
     function scrollToTop() {
         return new Promise((res, rej) => {
-            let intervalCount = 0;
+           
             let interval = setInterval(function() {
                 console.log("scrolling up", intervalCount)
                 
-                const scrollElems = document.querySelectorAll(".tombstone-timestamp-split.ng-trigger.ng-trigger-incomingMessage.ng-tns-c25-3.ng-star-inserted")[0].scrollIntoView();
+                const scrollElems = document.querySelectorAll(".tombstone-timestamp-split.ng-trigger.ng-trigger-incomingMessage.ng-tns-c25-3.ng-star-inserted");
+                if(scrollElems && scrollElems[0]){
+                    scrollElems[0].scrollIntoView();    
+                }
                 
-                intervalCount= intervalCount + 1;
+                intervalCount = intervalCount + 1;
 
                 if(intervalCount > 5) {
                    clearInterval(interval);
+                   intervalCount = 0;
                    res();
                 }
              }, 1500);
@@ -63,8 +68,28 @@
         });
     }
 
-    function getTransactions(smsList) {
 
+    function _getTransactionsForTransacted(smsList) {
+        const transactionTexts = smsList.filter(s => s.includes("transacted"));
+
+        const transactions = transactionTexts.map(t => {
+            const sanitizedStr = getNumberCommaSanitizedString(t);
+
+            const [, name, dateString] = sanitizedStr.match(/at (.+) on (\d\d\/\d\d\/\d\d)/);
+            const amount = Number(sanitizedStr.match(/BDT (.+) transacted/)[1]);
+            const dateObject = getDateObjectFromText(dateString);
+
+            return {
+                name,
+                amount: parseFloat(amount),
+                date: dateObject
+            }
+        });
+
+        return transactions;
+    }
+
+    function _getTransactionsForTrnx(smsList) {
         const transactionTexts = smsList.filter(s => s.includes("Trnx"));
 
         const transactions = transactionTexts.map(t => {
@@ -82,6 +107,15 @@
                 date: dateObject
             }
         });
+
+        return transactions;
+    }
+
+    function getTransactions(smsList) {
+        const transactions = [
+            ..._getTransactionsForTrnx(smsList),
+            ..._getTransactionsForTransacted(smsList)
+        ]
 
         return transactions;
     }
@@ -131,7 +165,7 @@
                 startDate: `${start}-18`,
                 endDate: `${end}-17`,
                 transactions: groups[key],
-                total: groups[key].reduce((sum, t) => sum + t.amount, 0)
+                total: groups[key].reduce((sum, t) => sum + t.amount, 0).toFixed(2)
             }
         })
         return monthlyGroups
@@ -180,13 +214,12 @@
     }
 
     async function run () {
-        await scrollToTop()
-        scrollToBottom()
+//         await scrollToTop()
+//         scrollToBottom()
 
         const textMessages = [...document.querySelectorAll(".text-msg")].map(r => r.innerText)
     
         const transactions = getTransactions(textMessages);
-
         const monthlyTransactions = groupTransactionsByPeriod(transactions);
 
         const averageExpense = (monthlyTransactions.reduce((sum, m) => sum + m.total, 0)) / monthlyTransactions.length;
