@@ -1,0 +1,16 @@
+{
+  "configurations": [
+    {
+      "name": "launch ts",
+      "type": "node",
+      "request": "launch",
+      "runtimeArgs": [
+        "-r",
+        "ts-node/register"
+      ],
+      "args": [
+        "${workspaceFolder}/index.ts"
+      ]
+    }
+  ]
+}
