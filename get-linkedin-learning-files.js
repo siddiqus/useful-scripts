@@ -47,7 +47,7 @@ function downloadAll(courseName, fileUrls) {
 
     let count = 1;
     for (const fileUrl of urls) {
-      await download(fileUrl, path.join(__dirname, 'linkedin-learning', course, `${count}.mp4`));
+      await download(fileUrl, path.join(__dirname, 'linkedin-learnings', course, `${count}.mp4`));
       count++;
     }
   }
