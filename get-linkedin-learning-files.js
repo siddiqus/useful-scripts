@@ -41,13 +41,26 @@ function downloadAll(courseName, fileUrls) {
     })
   };
 
-  async function run(course, urls) {
-    fs.mkdirSync(path.join(__dirname, 'linkedin-learnings'));
-    fs.mkdirSync(path.join(__dirname, 'linkedin-learnings', course));
+  async function run(courseName, urls) {
+    try {
+      fs.mkdirSync(path.join(__dirname, 'linkedin-learning'));
+    } catch (error) {
+      console.log(`root dir already exist, probably`)
+    }
+    try {
+      fs.mkdirSync(path.join(__dirname, 'linkedin-learning', courseName));
+    } catch (error) {
+      console.log(`course dir already exist, probably`)
+    }
 
     let count = 1;
     for (const fileUrl of urls) {
-      await download(fileUrl, path.join(__dirname, 'linkedin-learnings', course, `${count}.mp4`));
+      console.log(`Downloading file ${count} for course: ${courseName}`);
+      try {
+        await download(fileUrl, path.join(__dirname, 'linkedin-learning', courseName, `${count}.mp4`));
+      } catch (error) {
+        console.log(`file already exists, probably`)
+      }
       count++;
     }
   }
