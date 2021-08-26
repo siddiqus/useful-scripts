@@ -5,7 +5,9 @@
   }
 
   const fileUrls = [];
-  const pageLinks = [...document.querySelectorAll('.classroom-toc-item a')];
+  const pageLinks = [...document.querySelectorAll('.classroom-toc-item a')].filter(page => {
+    return !page.innerText.includes('Chapter Quiz');
+  });
 
   for (const link of pageLinks) {
     link.click();
