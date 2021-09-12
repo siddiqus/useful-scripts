@@ -2,6 +2,10 @@ import sequelize, { QueryOptions } from 'sequelize';
 
 // assuming sequelize is initialized
 
+export async function sleep(timeInMs: number) {
+  return new Promise(res => setTimeout(res, timeInMs));
+}
+
 export const sequelizeSelect = async (sqlQuery: string, queryOptions?: QueryOptions): Promise<any[]> => {
   const opts = queryOptions || {};
   return await sequelize.query(sqlQuery, {
@@ -10,7 +14,7 @@ export const sequelizeSelect = async (sqlQuery: string, queryOptions?: QueryOpti
   });
 };
 
-async function fetchFromDbWithPaginated<T extends Record<string, any>>(opts: {
+export async function fetchFromDbWithPaginated<T extends Record<string, any>>(opts: {
   identifier: string;
   limit?: number
   lastId?: number
