@@ -8,7 +8,7 @@ import path from 'path';
 
 function _getModelFileContent(modelName: string, tableName: string) {
   return `import { Column, Model, Table } from 'sequelize-typescript';
-import { DataTypes } from 'sequelize/types';
+import { DataTypes } from 'sequelize';
 
 @Table({
   tableName: '${tableName}',
