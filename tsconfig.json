@@ -1,0 +1,39 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "declaration": true,
+    "removeComments": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "allowSyntheticDefaultImports": true,
+    "target": "es2017",
+    "sourceMap": true,
+    "outDir": "./build",
+    "baseUrl": "./",
+    "incremental": true,
+    "rootDir": "./",
+    "strict": true,
+    "moduleResolution": "node",
+    "paths": {
+      "*": ["*"]
+    },
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "strictNullChecks": true,
+    "noImplicitAny": true,
+    "strictBindCallApply": true,
+    "forceConsistentCasingInFileNames": true,
+    "noFallthroughCasesInSwitch": true,
+    "alwaysStrict": true,
+    "allowUnreachableCode": false,
+    "noUnusedLocals": true,
+    "strictFunctionTypes": true,
+    "noImplicitReturns": true,
+    "noImplicitThis": true,
+    "noUncheckedIndexedAccess": true
+  },
+  "watchOptions": {
+    "synchronousWatchDirectory": true
+  },
+  "include": ["src"]
+}
