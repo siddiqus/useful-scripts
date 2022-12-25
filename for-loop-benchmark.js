@@ -1,55 +1,80 @@
-const arr = Array(100_000_000);
+/* eslint-disable @typescript-eslint/no-unused-vars */
+const sizes = [1000, 100000, 1000000, 10000000, 100000000];
 
 async function run() {
-  const counts = {
-    forOf: [],
-    forLoop: [],
-    forEach: [],
-    forLoopCached: [],
+  let count = 0;
+
+  const counts: {
+    forOf: {
+      [key in number]: number;
+    };
+    forLoop: {
+      [key in number]: number;
+    };
+    forEach: {
+      [key in number]: number;
+    };
+    forLoopCached: {
+      [key in number]: number;
+    };
+  } = {
+    forOf: {},
+    forEach: {},
+    forLoopCached: {},
+    forLoop: {},
   };
-  for (const _trial of Array(5)) {
-    let count = 0;
-    let startTime = Date.now();
-    for (const _elem of arr) {
-      count++;
-    }
-    let ms = Date.now() - startTime;
-    counts.forOf.push(ms);
 
-    startTime = Date.now();
-    count = 0;
-    arr.forEach((a) => {
-      count++;
+  const trialCount = 10;
+
+  for (const size of sizes) {
+    const arr = Array(size);
+    counts.forOf[size] = 0;
+    counts.forEach[size] = 0;
+    counts.forLoop[size] = 0;
+    counts.forLoopCached[size] = 0;
+
+    for (const _trial of Array(trialCount)) {
+      let startTime = Date.now();
+      for (const _elem of arr) {
+        count++;
+      }
+      let ms = Date.now() - startTime;
+      counts.forOf[size] += ms;
+
+      startTime = Date.now();
+      count = 0;
+      arr.forEach((a) => {
+        count++;
+      });
+      ms = Date.now() - startTime;
+      counts.forEach[size] += ms;
+
+      startTime = Date.now();
+      count = 0;
+      for (let index = 0; index < arr.length; index++) {
+        count++;
+      }
+      ms = Date.now() - startTime;
+      counts.forLoop[size] += ms;
+
+      startTime = Date.now();
+      count = 0;
+      for (let index = 0, len = arr.length; index < len; index++) {
+        count++;
+      }
+      ms = Date.now() - startTime;
+      counts.forLoopCached[size] += ms;
+    }
+
+    Object.keys(counts).forEach((loopType) => {
+      counts[loopType as any as keyof typeof counts][size] =
+        counts[loopType as any as keyof typeof counts][size] / trialCount; // calc avg
     });
-    ms = Date.now() - startTime;
-    counts.forEach.push(ms);
-
-    startTime = Date.now();
-    count = 0;
-    for (let index = 0; index < arr.length; index++) {
-      count++;
-    }
-    ms = Date.now() - startTime;
-    counts.forLoop.push(ms);
-
-    startTime = Date.now();
-    count = 0;
-    for (let index = 0, len = arr.length; index < len; index++) {
-      count++;
-    }
-    ms = Date.now() - startTime;
-    counts.forLoopCached.push(ms);
   }
 
-  const averages = Object.keys(counts).reduce((obj, key) => {
-    const loopCounts = counts[key];
-    const avg =
-      loopCounts.reduce((sum, elem) => sum + elem, 0) / loopCounts.length;
-    obj[key] = avg;
-    return obj;
-  }, {});
+  console.table(counts);
 
-  console.log(averages);
+  return count;
 }
 
 run()
