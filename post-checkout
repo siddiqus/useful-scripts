@@ -1,0 +1,20 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+current_branch=$(git rev-parse --abbrev-ref HEAD)
+
+if [[ "$current_branch" =~ ^(staging|stage|dev|main|master|release|develop|development)$ ]]; then
+    exit 0
+fi
+
+regex="^JIRA-([0-9]+)-([a-zA-Z0-9\-]+)$"
+
+if [[ $current_branch =~ $regex ]]
+then
+    exit 0
+else
+    echo "Error: Invalid branch name, must follow pattern $regex"
+    git switch --quiet -
+    git branch -D --quiet $current_branch
+    exit 1
+fi
