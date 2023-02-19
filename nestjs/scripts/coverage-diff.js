@@ -3,7 +3,7 @@ const { execSync } = require('child_process');
 const { keyBy } = require('lodash');
 
 const coveragePathIgnorePatterns =
-  require('../jest.config').coveragePathIgnorePatterns;
+  require('../jest.config').coveragePathIgnorePatterns || [];
 
 function getCurrentCommitHash() {
   const command = 'git rev-parse HEAD';
