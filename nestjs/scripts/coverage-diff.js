@@ -2,7 +2,8 @@
 const { execSync } = require('child_process');
 const { keyBy } = require('lodash');
 
-const coveragePathIgnorePatterns = require('../jest.config').coveragePathIgnorePatterns;
+const coveragePathIgnorePatterns =
+  require('../jest.config').coveragePathIgnorePatterns;
 
 function getCurrentCommitHash() {
   const command = 'git rev-parse HEAD';
@@ -27,14 +28,21 @@ function filterIgnored(fileNames) {
     if (c.charAt(0) === '/' || c.charAt(0) === '!') {
       c = c.substring(1, c.length);
     }
-    return `(${c.replace(/\*/g, '').replace(/\//g, '\\/').replace(/\./g, '\\.')})`;
+    return `(${c
+      .replace(/\*/g, '')
+      .replace(/\//g, '\\/')
+      .replace(/\./g, '\\.')})`;
   });
 
-  return fileNames.filter((name) => !new RegExp(`.*${coverageIgnore.join('|')}.*`, 'gm').test(name));
+  return fileNames.filter(
+    (name) => !new RegExp(`.*${coverageIgnore.join('|')}.*`, 'gm').test(name),
+  );
 }
 
 function parseLine(line) {
-  const [name, statement, branch, funcs, lines] = line.split('|').map((s) => s.trim());
+  const [name, statement, branch, funcs, lines] = line
+    .split('|')
+    .map((s) => s.trim());
 
   if (!name) {
     return null;
@@ -51,7 +59,7 @@ function parseLine(line) {
 
 function getCoverage() {
   try {
-    const result = execSync('yarn test:cov:ci').toString().split('\n');
+    const result = execSync('yarn test --coverage').toString().split('\n');
 
     const allFilesAnchor = result.findIndex((s) => s.includes('All files'));
 
@@ -64,7 +72,11 @@ function getCoverage() {
     for (let index = allFilesAnchor + 1; index < result.length; index++) {
       const line = result[index];
 
-      if (line.includes('-------') || line.includes('Done in') || line.includes('jest-stare')) {
+      if (
+        line.includes('-------') ||
+        line.includes('Done in') ||
+        line.includes('jest-stare')
+      ) {
         continue;
       }
 
@@ -74,7 +86,7 @@ function getCoverage() {
         continue;
       }
 
-      const isFolder = !line.includes('.ts');
+      const isFolder = !(line.includes('.ts') && line.includes('.js'));
       if (isFolder) {
         currentFolder = lineInfo.name;
         continue;
@@ -127,35 +139,19 @@ function printMarkdownTable(data) {
   console.log(markdownTable);
 }
 
-function removeSrcBase(data) {
-  return data.map((d) => {
-    return {
-      ...d,
-      name: d.name.split('src/').pop(), // remove src from base path
-    };
-  });
-}
-
 function getCoverageForDiffFiles(baseRef) {
-  const diffList = getDiffList(baseRef)
-    .filter((s) => s.includes('.ts') && !s.includes('.e2e'))
-    .map((s) => {
-      if (s.includes('.spec.')) {
-        return s.replace('.spec', ''); // this is to ensure we catch files that have change in test files but not in the main file
-      }
-      return s;
-    });
+  const diffList = getDiffList(baseRef).filter(
+    (s) =>
+      (s.includes('.ts') || s.includes('.js')) &&
+      !s.includes('.spec.') &&
+      !s.includes('.test.') &&
+      !s.includes('.e2e'),
+  );
 
   const coverage = getCoverage();
+  const coverageByFilename = keyBy(coverage.files, 'name');
 
   const diffListWithoutJestIgnore = filterIgnored(diffList);
-
-  if (!diffListWithoutJestIgnore.length) {
-    console.info('ℹ️ No diff found, printing full coverage report');
-    return [coverage.all, ...removeSrcBase(coverage.files)];
-  }
-
-  const coverageByFilename = keyBy(coverage.files, 'name');
   let diffFilesCoverage = diffListWithoutJestIgnore.map((name) => {
     const coverageInfo = coverageByFilename[name];
     return coverageInfo
@@ -169,7 +165,15 @@ function getCoverageForDiffFiles(baseRef) {
         };
   });
 
-  return [coverage.all, ...removeSrcBase(diffFilesCoverage)];
+  diffFilesCoverage = diffFilesCoverage.map((d) => {
+    return {
+      ...d,
+      name: d.name.split('src/').pop(), // remove src from base path
+    };
+  });
+
+  diffFilesCoverage.unshift(coverage.all);
+  return diffFilesCoverage;
 }
 
 function printData(format, data) {
@@ -204,7 +208,7 @@ function getArgs() {
   if (!args.baseRef) {
     console.error(
       // eslint-disable-next-line quotes
-      `!!! Please provide baseRef param e.g. baseRef=staging`,
+      `!!! Please provide baseRef param. e.g. fromSha and toSha. e.g. baseRef=staging`,
     );
     process.exit(1);
   }
