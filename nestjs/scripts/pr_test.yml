@@ -1,0 +1,35 @@
+name: PR Test
+
+on: ['pull_request']
+
+jobs:
+  tests:
+    name: Unit Test
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout base branch
+        uses: actions/checkout@v3
+        with:
+          ref: ${{github.base_ref}}
+      - name: Checkout current branch
+        uses: actions/checkout@v3
+
+      - name: Use Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18.13.0'
+
+      - name: Install dependencies & Run Test cases
+        env:
+          NODE_ENV: test
+        run: |-
+          yarn
+          mkdir -p reports/
+          node scripts/coverage.js format=markdown baseRef="${{github.base_ref}}" > reports/coverage.txt
+
+      - name: Comment PR
+        uses: machine-learning-apps/pr-comment@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          path: reports/coverage.txt
