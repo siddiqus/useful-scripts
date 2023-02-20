@@ -86,7 +86,7 @@ function getCoverage() {
         continue;
       }
 
-      const isFolder = !(line.includes('.ts') && line.includes('.js'));
+      const isFolder = !(line.includes('.ts') || line.includes('.js'));
       if (isFolder) {
         currentFolder = lineInfo.name;
         continue;
@@ -145,7 +145,11 @@ function getCoverageForDiffFiles(baseRef) {
       (s.includes('.ts') || s.includes('.js')) &&
       !s.includes('.spec.') &&
       !s.includes('.test.') &&
-      !s.includes('.e2e'),
+      !s.includes('.e2e') &&
+      !s.includes('.config.') &&
+      !s.includes('package.json') &&
+      !s.includes('scripts/') &&
+      !s.includes('yarn.'),
   );
 
   const coverage = getCoverage();
