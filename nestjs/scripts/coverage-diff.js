@@ -267,7 +267,7 @@ function getArgs() {
   if (!args.baseRef) {
     console.error(
       // eslint-disable-next-line quotes
-      `!!! Please provide baseRef param. e.g. fromSha and toSha. e.g. baseRef=staging`,
+      `!!! Please provide baseRef param. e.g. baseRef=staging`,
     );
     process.exit(1);
   }
