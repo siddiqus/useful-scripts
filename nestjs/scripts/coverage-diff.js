@@ -118,14 +118,54 @@ function printCsv(data) {
   console.log(csvString);
 }
 
-function printMarkdownTable(data) {
-  function _markdownTableRow(data) {
-    return `|${data.join('|')}|\n`;
-  }
+const HIGH_COVERAGE_THRESHOLD = 95;
+const MID_COVERAGE_THRESHOLD = 85;
+const LOW_COVERAGE_THRESHOLD = 70;
 
+function _getCoverageThresholdMarkers() {
+  return (
+    'Markers:' +
+    [
+      `[🔴 <${LOW_COVERAGE_THRESHOLD}%]`,
+      `[🟠 <${MID_COVERAGE_THRESHOLD}%]`,
+      `[🟡 <${HIGH_COVERAGE_THRESHOLD}%]`,
+    ].join(' ')
+  );
+}
+
+function printMarkdownTable(data) {
   const headers = ['name', 'statements', 'branches', 'functions', 'lines'];
 
-  let markdownTable = _markdownTableRow(headers);
+  function _markdownTableRow(data) {
+    const formatted = data
+      .map((d) => {
+        return String(d).replace('%', '');
+      })
+      .map((d) => {
+        if (Number.isNaN(+d)) {
+          return d.replace(/\s/g, '&nbsp;');
+        }
+
+        d = Number(d).toFixed(1);
+
+        if (d < LOW_COVERAGE_THRESHOLD) {
+          return `${d}% 🔴`;
+        }
+        if (d < MID_COVERAGE_THRESHOLD) {
+          return `${d}% 🟠`;
+        }
+        if (d < HIGH_COVERAGE_THRESHOLD) {
+          return `${d}% 🟡`;
+        }
+
+        return `${d}%`;
+      })
+      .join('|');
+    return `|${formatted}|\n`;
+  }
+
+  let markdownTable = _getCoverageThresholdMarkers() + '\n';
+  markdownTable += _markdownTableRow(headers.map((h) => h.padEnd(12)));
   markdownTable += _markdownTableRow(headers.map((_h) => ':---')); // left aligned
 
   const allData = data.shift();
@@ -139,24 +179,47 @@ function printMarkdownTable(data) {
   console.log(markdownTable);
 }
 
+function removeSrcBase(data) {
+  return data.map((d) => {
+    return {
+      ...d,
+      name: d.name.split('src/').pop(), // remove src from base path
+    };
+  });
+}
+
 function getCoverageForDiffFiles(baseRef) {
-  const diffList = getDiffList(baseRef).filter(
-    (s) =>
-      (s.includes('.ts') || s.includes('.js')) &&
-      !s.includes('.spec.') &&
-      !s.includes('.test.') &&
-      !s.includes('.e2e') &&
-      !s.includes('.config.') &&
-      !s.includes('package.json') &&
-      !s.includes('scripts/') &&
-      !s.includes('yarn.'),
-  );
+  let diffList = getDiffList(baseRef);
+
+  diffList = diffList
+    .filter(
+      (s) =>
+        s.startsWith('src/') &&
+        (s.includes('.ts') || s.includes('.js')) &&
+        !s.includes('.e2e') &&
+        !s.includes('.config.'),
+    )
+    .map((s) => {
+      if (s.includes('.spec.') || s.includes('.test.')) {
+        return s.replace(/\.(spec|test)/, ''); // this is to ensure we catch files that have change in test files but not in the main file
+      }
+      return s;
+    });
 
   const coverage = getCoverage();
-  const coverageByFilename = keyBy(coverage.files, 'name');
 
   const diffListWithoutJestIgnore = filterIgnored(diffList);
-  let diffFilesCoverage = diffListWithoutJestIgnore.map((name) => {
+
+  if (!diffListWithoutJestIgnore.length) {
+    console.info('ℹ️ No diff found, printing full coverage report');
+    return [coverage.all, ...removeSrcBase(coverage.files)];
+  }
+
+  const diffSet = [...new Set(diffListWithoutJestIgnore)];
+
+  const coverageByFilename = keyBy(coverage.files, 'name');
+
+  let diffFilesCoverage = diffSet.map((name) => {
     const coverageInfo = coverageByFilename[name];
     return coverageInfo
       ? coverageInfo
@@ -169,15 +232,7 @@ function getCoverageForDiffFiles(baseRef) {
         };
   });
 
-  diffFilesCoverage = diffFilesCoverage.map((d) => {
-    return {
-      ...d,
-      name: d.name.split('src/').pop(), // remove src from base path
-    };
-  });
-
-  diffFilesCoverage.unshift(coverage.all);
-  return diffFilesCoverage;
+  return [coverage.all, ...removeSrcBase(diffFilesCoverage)];
 }
 
 function printData(format, data) {
