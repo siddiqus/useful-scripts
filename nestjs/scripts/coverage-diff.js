@@ -120,7 +120,7 @@ function printCsv(data) {
 
 const HIGH_COVERAGE_THRESHOLD = 95;
 const MID_COVERAGE_THRESHOLD = 85;
-const LOW_COVERAGE_THRESHOLD = 70;
+const LOW_COVERAGE_THRESHOLD = 75;
 
 function _getCoverageThresholdMarkers() {
   return (
