@@ -1,0 +1,10 @@
+{
+  "pattern": "src/**/*.ts",
+  "threshold": 5,
+  "reporters": ["markdown", "html", "json"],
+  "output": "reports",
+  "ignore": ["**/*.{spec,test}.ts"],
+  "absolute": true,
+  "gitignore": true,
+  "mode": "strict"
+}
