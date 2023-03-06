@@ -78,15 +78,7 @@ function getDiffList(baseRef) {
   return diffList;
 }
 
-function run() {
-  const { baseRef } = getArgs();
-
-  const diffList = getDiffList(baseRef);
-
-  if (!diffList.length) {
-    return;
-  }
-
+function runJscpd(diffList) {
   const pattern = diffList.join(',');
 
   const command = `yarn jscpd -s --pattern "{${pattern}}"`;
@@ -94,7 +86,9 @@ function run() {
   execSync(command, {
     cwd: path.resolve(__dirname, '..'),
   }).toString();
+}
 
+function updateMarkdown() {
   const markDownPath = path.resolve(
     __dirname,
     '..',
@@ -108,6 +102,19 @@ function run() {
     .slice(3)
     .join('\n');
   fs.writeFileSync(markDownPath, markDown);
+}
+
+function run() {
+  const { baseRef } = getArgs();
+
+  const diffList = getDiffList(baseRef);
+
+  if (!diffList.length) {
+    return;
+  }
+
+  runJscpd(diffList);
+  updateMarkdown();
 }
 
 run();
