@@ -2,7 +2,7 @@
 
 This process can be used to generate a TypeScript code duplication report using `jscpd`, and comment the report in a github PR
 
-##### Example command in package.lock
+##### Example script command in package.json
 `"dupecheck": "node scripts/dupe-check.js"`
 
 #### Example github action
