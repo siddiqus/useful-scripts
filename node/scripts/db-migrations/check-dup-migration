@@ -1,0 +1,9 @@
+#!/bin/sh
+echo 'Checking migration duplicates'
+SQL_DIR="./schema-migrations"
+DUP_VERSIONS=`ls $SQL_DIR | grep -E '[0-9]*\.do\.' | sed 's/[^0-9]*//g' | sort | uniq -d`
+
+if [ -n "${DUP_VERSIONS}" ]; then
+	echo "Duplicate DB migration version: ${DUP_VERSIONS}" 1>&2
+	exit 1
+fi
