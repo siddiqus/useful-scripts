@@ -72,6 +72,35 @@
           }
         ]
       }
+    ],
+    complexity: ['error', { max: 10 }],
+    "@typescript-eslint/no-unnecessary-condition": 'error',
+    "@typescript-eslint/no-floating-promises": "error",
+    "no-shadow": "off",
+    "@typescript-eslint/no-shadow": "error",
+    "@typescript-eslint/naming-convention": [
+      "error",
+      {
+        "selector": "variable",
+        "filter": "_typename",
+        "format": null
+      },
+      {
+        "selector": "variable",
+        "types": ["function"],
+        "format": ["camelCase", "PascalCase"],
+        "leadingUnderscore": "allow"
+      },
+      {
+        "selector": "variable",
+        "types": ["boolean", "number", "string", "array"],
+        "format": ["camelCase", "UPPER_CASE"],
+        "leadingUnderscore": "allow"
+      },
+      {
+        "selector": "typeLike",
+        "format": ["PascalCase"]
+      }
     ]
   },
   "plugins": [
