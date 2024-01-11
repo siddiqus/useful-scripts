@@ -101,7 +101,16 @@
         "selector": "typeLike",
         "format": ["PascalCase"]
       }
-    ]
+    ],
+    "max-params": "off",
+    "@typescript-eslint/max-params": "error",
+    "max-depth": [
+      "error",
+      {
+        "max": 3
+      }
+    ],
+    "complexity": ["error", 15]
   },
   "plugins": [
     "@typescript-eslint/eslint-plugin",
