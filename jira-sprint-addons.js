@@ -107,7 +107,7 @@ function getMappedIssueData(boardData) {
     return mappedIssues;
 }
 
-const getBoardUrl = (baseUrl, projectKey,rapidViewId)=>`${baseUrl}/rest/greenhopper/1.0/xboard/work/allData.json?rapidViewId=${rapidViewId}&selectedProjectKey=${projectKey}`;
+const getBoardUrl = (baseUrl,projectKey,rapidViewId)=>`${baseUrl}/rest/greenhopper/1.0/xboard/work/allData.json?rapidViewId=${rapidViewId}&selectedProjectKey=${projectKey}`;
 
 const TIME_ELAPSED_CLASS_NAME = 'ghx-issue-time-elapsed';
 
@@ -312,15 +312,40 @@ function populateReviewerData(reviewerData) {
     }
 }
 
+function showIssueCounts(boardData, issueData) {
+    const statusCountMap = issueData.reduce((map,issue)=>{
+        if (map[issue.status.toUpperCase()]) {
+            map[issue.status.toUpperCase()]++
+        } else {
+            map[issue.status.toUpperCase()] = 1
+        }
+        return map
+    }
+    , {})
+
+    const columnHeaders = [...document.querySelectorAll('.ghx-column-headers .ghx-column')]
+    columnHeaders.forEach(headerElement=>{
+        const headerTitleElem = headerElement.querySelector('.ghx-column-title')
+        const columnStatus = headerTitleElem.innerText.trim().toUpperCase().split(' (')[0]
+        const statusCount = statusCountMap[columnStatus]
+        const newDisplayText = `${columnStatus} (${statusCount || 0})`
+        headerTitleElem.innerText = newDisplayText
+    }
+    )
+}
+
 async function run() {
-    const projectKey = 'STM';
-    const rapidViewId = 1229;
+    const projectKey = 'API';
+    const rapidViewId = 1211;
     const baseUrl = 'https://jira.sso.episerver.net'
-  
+
     const boardUrl = getBoardUrl(baseUrl, projectKey, rapidViewId);
     const boardData = await getFromUrl(boardUrl);
+
     const issueData = getMappedIssueData(boardData);
-  
+
+    showIssueCounts(boardData, issueData)
+
     const inProgressIssues = getInProgressIssues(issueData);
     highlightInProgressIssues(projectKey, inProgressIssues);
 
