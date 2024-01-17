@@ -91,7 +91,7 @@ function getMappedIssueData(boardData) {
         const status = getStatusNameFromId(statuses, issue.statusId);
         const isDone = issue.done || status === 'Done';
 
-        const timeElapsedInStatusInHours = Math.floor((Date.now() - issue.timeInColumn.enteredStatus) / 1000 / 60 / 60);
+        const timeElapsedInStatusInHours = issue.timeInColumn ? Math.floor((Date.now() - issue.timeInColumn.enteredStatus) / 1000 / 60 / 60) : 0;
 
         return {
             issueKey,
@@ -120,6 +120,9 @@ function getHtmlFromString(htmlString) {
 }
 
 function getTimeElapsedHtmlElement(timeInHours) {
+    if (!timeInHours) {
+        return null
+    }
     let color;
     if (timeInHours < 24) {
         color = 'gray'
@@ -162,6 +165,11 @@ function highlightInProgressIssues(projectKey, issueData) {
         const endElem = htmlCard.querySelector(`.${endDivClass}`);
 
         const newHtmlElem = getTimeElapsedHtmlElement(issue.timeElapsedInStatusInHours);
+
+        if (!newHtmlElem) {
+            continue;
+        }
+
         const existingElem = htmlCard.querySelector(`.${TIME_ELAPSED_CLASS_NAME}`)
         if (!existingElem) {
             parentElem.insertBefore(newHtmlElem, endElem);
@@ -342,7 +350,7 @@ async function run() {
     showStatusColumnCounts(boardData, issueData);
 
     highlightInProgressIssues(projectKey, getInProgressIssues(issueData));
-    
+
     // for headers, these will be shown in the reverse order
     populateReviewerData(getReviewerData(issueData))
     populateAssigneeData(groupBy(issueData, 'assignee'))
@@ -353,9 +361,9 @@ async function run() {
 (()=>{
     run();
 
-    setInterval(()=>{
-        run().then(()=>console.log(new Date(), 'refreshed!'));
-    }
-    , 2000)
+    // setInterval(()=>{
+    //     run().then(()=>console.log(new Date(), 'refreshed!'));
+    // }
+    // , 2000)
 }
 )()
