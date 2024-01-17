@@ -1,3 +1,5 @@
+const headerId = '#ghx-column-header-group'
+
 function groupBy(collection, iteratee) {
     return collection.reduce((result,item)=>{
         const key = typeof iteratee === 'function' ? iteratee(item) : item[iteratee];
@@ -195,6 +197,19 @@ function getEpicCompletionData(issueData) {
     return results;
 }
 
+function appendHtmlStringToHeader(newElementSelector, htmlString) {
+    const htmlElem = getHtmlFromString(htmlString)
+
+    const headerElem = document.querySelector(headerId)
+
+    const existingElem = headerElem.querySelector(newElementSelector)
+    if (!existingElem) {
+        headerElem.insertBefore(htmlElem, headerElem.firstChild)
+    } else {
+        existingElem.innerHTML = htmlElem.innerHTML
+    }
+}
+
 function populateEpicCompletionData(epicCompletionData) {
     const htmlGenerator = (epic)=>{
         return `<span class="aui-label" style="padding: 5px; font-weight: 600; font-size: 12px"> ${epic.epicName} (${epic.doneCount}/${epic.totalCount}) </span>`
@@ -210,16 +225,7 @@ function populateEpicCompletionData(epicCompletionData) {
     }
     htmlString += '</div>'
 
-    const htmlElem = getHtmlFromString(htmlString)
-
-    const headerElem = document.querySelector('.ghx-controls-filters')
-
-    const existingEpicHeaderElem = headerElem.querySelector('#ghx-header-epic-counts')
-    if (!existingEpicHeaderElem) {
-        headerElem.appendChild(htmlElem)
-    } else {
-        existingEpicHeaderElem.innerHTML = htmlElem.innerHTML
-    }
+    appendHtmlStringToHeader('#ghx-header-epic-counts', htmlString)
 }
 
 function populateAssigneeData(assignedTasksData) {
@@ -245,16 +251,7 @@ function populateAssigneeData(assignedTasksData) {
     }
     htmlString += '</div>'
 
-    const htmlElem = getHtmlFromString(htmlString)
-
-    const headerElem = document.querySelector('.ghx-controls-filters')
-
-    const existingElem = headerElem.querySelector(`#${elementId}`)
-    if (!existingElem) {
-        headerElem.appendChild(htmlElem)
-    } else {
-        existingElem.innerHTML = htmlElem.innerHTML
-    }
+    appendHtmlStringToHeader(`#${elementId}`, htmlString);
 }
 
 function getReviewerData(issueData) {
@@ -300,19 +297,10 @@ function populateReviewerData(reviewerData) {
     }
     htmlString += '</div>'
 
-    const htmlElem = getHtmlFromString(htmlString)
-
-    const headerElem = document.querySelector('.ghx-controls-filters')
-
-    const existingElem = headerElem.querySelector(`#${elementId}`)
-    if (!existingElem) {
-        headerElem.appendChild(htmlElem)
-    } else {
-        existingElem.innerHTML = htmlElem.innerHTML
-    }
+    appendHtmlStringToHeader(`#${elementId}`, htmlString);
 }
 
-function showIssueCounts(boardData, issueData) {
+function showStatusColumnCounts(boardData, issueData) {
     const statusCountMap = issueData.reduce((map,issue)=>{
         if (map[issue.status.toUpperCase()]) {
             map[issue.status.toUpperCase()]++
@@ -335,36 +323,39 @@ function showIssueCounts(boardData, issueData) {
 }
 
 async function run() {
-    const projectKey = 'API';
-    const rapidViewId = 1211;
     const baseUrl = 'https://jira.sso.episerver.net'
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const rapidViewId = urlParams.get('rapidView');
+    const projectKey = urlParams.get('projectKey');
+    const view = urlParams.get('view') || ''
+
+    if (window.location.href.indexOf(baseUrl) === -1 || view.includes('planning')) {
+        console.log(`No sprint board in view, nothing to do here!`)
+        return;
+    }
 
     const boardUrl = getBoardUrl(baseUrl, projectKey, rapidViewId);
     const boardData = await getFromUrl(boardUrl);
-
     const issueData = getMappedIssueData(boardData);
 
-    showIssueCounts(boardData, issueData)
+    showStatusColumnCounts(boardData, issueData);
 
-    const inProgressIssues = getInProgressIssues(issueData);
-    highlightInProgressIssues(projectKey, inProgressIssues);
-
-    const epicCompletionData = getEpicCompletionData(issueData);
-
-    populateEpicCompletionData(epicCompletionData)
-
+    highlightInProgressIssues(projectKey, getInProgressIssues(issueData));
+    
+    // for headers, these will be shown in the reverse order
+    populateReviewerData(getReviewerData(issueData))
     populateAssigneeData(groupBy(issueData, 'assignee'))
+    populateEpicCompletionData(getEpicCompletionData(issueData))
 
-    const reviewerData = getReviewerData(issueData)
-    populateReviewerData(reviewerData)
 }
 
 (()=>{
     run();
 
     setInterval(()=>{
-        run().then(()=>console.log('refreshed!'));
+        run().then(()=>console.log(new Date(), 'refreshed!'));
     }
-    , 5000)
+    , 2000)
 }
 )()
