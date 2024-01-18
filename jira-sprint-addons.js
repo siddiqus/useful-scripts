@@ -1,4 +1,5 @@
 const headerId = '#ghx-column-header-group'
+const TIME_ELAPSED_CLASS_NAME = 'ghx-issue-time-elapsed';
 
 function groupBy(collection, iteratee) {
     return collection.reduce((result,item)=>{
@@ -111,8 +112,6 @@ function getMappedIssueData(boardData) {
 
 const getBoardUrl = (baseUrl,rapidViewId)=>`${baseUrl}/rest/greenhopper/1.0/xboard/work/allData.json?rapidViewId=${rapidViewId}`;
 
-const TIME_ELAPSED_CLASS_NAME = 'ghx-issue-time-elapsed';
-
 function getHtmlFromString(htmlString) {
     const tempContainer = document.createElement('div');
     tempContainer.innerHTML = htmlString;
@@ -216,12 +215,14 @@ function appendHtmlStringToHeader(newElementSelector, htmlString) {
     }
 }
 
+const headerStatsFontSize = '11px'
+
 function populateEpicCompletionData(epicCompletionData) {
     const htmlGenerator = (epic)=>{
-        return `<span class="aui-label" style="padding: 5px; font-weight: 600; font-size: 12px"> ${epic.epicName} (${epic.doneCount}/${epic.totalCount}) </span>`
+        return `<span class="aui-label" style="padding: 5px; font-weight: 600; font-size: ${headerStatsFontSize}"> ${epic.epicName} (${epic.doneCount}/${epic.totalCount}) </span>`
     }
 
-    let htmlString = `<div id="ghx-header-epic-counts"> <span class="aui-label" style="padding: 5px; font-weight: 600; font-size: 12px">EPICS:</span> `
+    let htmlString = `<div id="ghx-header-epic-counts"> <span class="aui-label" style="padding: 5px; font-weight: 600; font-size: ${headerStatsFontSize}">EPICS:</span> `
 
     epicCompletionData.sort((a,b)=>b.totalCount - a.totalCount)
 
@@ -245,11 +246,11 @@ function populateAssigneeData(assignedTasksData) {
     dataArray.sort((a,b)=>b.count - a.count)
 
     const htmlGenerator = (asigneeName,assigneeTasks)=>{
-        return `<span class="aui-label" style="padding: 5px; font-weight: 600; color: gray; font-size: 12px"> ${asigneeName}: ${assigneeTasks} </span>`
+        return `<span class="aui-label" style="padding: 5px; font-weight: 600; color: gray; font-size: ${headerStatsFontSize}"> ${asigneeName}: ${assigneeTasks} </span>`
     }
 
     const elementId = 'ghx-header-assignee-task-counts'
-    let htmlString = `<div id="${elementId}"> <span class="aui-label" style="padding: 5px; font-weight: 600; font-size: 12px">ASSIGNED:</span>`
+    let htmlString = `<div id="${elementId}"> <span class="aui-label" style="padding: 5px; font-weight: 600; font-size: ${headerStatsFontSize}">ASSIGNED:</span>`
 
     for (const assignee of dataArray) {
         const epicHtml = htmlGenerator(assignee.name, assignee.count)
@@ -291,11 +292,11 @@ function populateReviewerData(reviewerData) {
     dataArray.sort((a,b)=>b.count - a.count)
 
     const htmlGenerator = (asigneeName,assigneeTasks)=>{
-        return `<span class="aui-label" style="padding: 5px; font-weight: 600; color: gray; font-size: 12px"> ${asigneeName}: ${assigneeTasks} </span>`
+        return `<span class="aui-label" style="padding: 5px; font-weight: 600; color: gray; font-size: ${headerStatsFontSize}"> ${asigneeName}: ${assigneeTasks} </span>`
     }
 
     const elementId = 'ghx-header-reviewer-task-counts'
-    let htmlString = `<div id="${elementId}"> <span class="aui-label" style="padding: 5px; font-weight: 600; font-size: 12px">REVIEWS:</span>`
+    let htmlString = `<div id="${elementId}"> <span class="aui-label" style="padding: 5px; font-weight: 600; font-size: ${headerStatsFontSize}">REVIEWS:</span>`
 
     for (const reviewer of dataArray) {
         const epicHtml = htmlGenerator(reviewer.name, reviewer.count)
