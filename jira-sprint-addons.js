@@ -109,7 +109,7 @@ function getMappedIssueData(boardData) {
     return mappedIssues;
 }
 
-const getBoardUrl = (baseUrl,projectKey,rapidViewId)=>`${baseUrl}/rest/greenhopper/1.0/xboard/work/allData.json?rapidViewId=${rapidViewId}&selectedProjectKey=${projectKey}`;
+const getBoardUrl = (baseUrl,rapidViewId)=>`${baseUrl}/rest/greenhopper/1.0/xboard/work/allData.json?rapidViewId=${rapidViewId}`;
 
 const TIME_ELAPSED_CLASS_NAME = 'ghx-issue-time-elapsed';
 
@@ -143,14 +143,12 @@ function getInProgressIssues(issueData) {
     return issueData.filter((f)=>!['To Do'].includes(f.status) && !f.isDone);
 }
 
-function highlightInProgressIssues(projectKey, issueData) {
+function highlightInProgressIssues(issueData) {
     const cards = [...document.getElementsByClassName('ghx-issue')];
 
     const htmlCardMap = cards.reduce((obj,card)=>{
-        if (card.getAttribute('id').includes(projectKey)) {
-            const id = card.getAttribute('id');
-            obj[id] = card;
-        }
+        const id = card.getAttribute('id');
+        obj[id] = card;
         return obj;
     }
     , {});
@@ -335,7 +333,6 @@ async function run() {
 
     const urlParams = new URLSearchParams(window.location.search);
     const rapidViewId = urlParams.get('rapidView');
-    const projectKey = urlParams.get('projectKey');
     const view = urlParams.get('view') || ''
 
     if (window.location.href.indexOf(baseUrl) === -1 || view.includes('planning')) {
@@ -343,13 +340,13 @@ async function run() {
         return;
     }
 
-    const boardUrl = getBoardUrl(baseUrl, projectKey, rapidViewId);
+    const boardUrl = getBoardUrl(baseUrl, rapidViewId);
     const boardData = await getFromUrl(boardUrl);
     const issueData = getMappedIssueData(boardData);
 
     showStatusColumnCounts(boardData, issueData);
 
-    highlightInProgressIssues(projectKey, getInProgressIssues(issueData));
+    highlightInProgressIssues(getInProgressIssues(issueData));
 
     // for headers, these will be shown in the reverse order
     populateReviewerData(getReviewerData(issueData))
@@ -361,9 +358,9 @@ async function run() {
 (()=>{
     run();
 
-    // setInterval(()=>{
-    //     run().then(()=>console.log(new Date(), 'refreshed!'));
-    // }
-    // , 2000)
+    setInterval(()=>{
+        run().then(()=>console.log(new Date(), 'refreshed!'));
+    }
+    , 2000)
 }
 )()
